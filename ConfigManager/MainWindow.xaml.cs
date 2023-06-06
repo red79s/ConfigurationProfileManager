@@ -2,6 +2,7 @@
 using ConfigManagerLib.Model;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -251,6 +252,44 @@ namespace ConfigManager
             {
                 WriteOutput($"Failed to delete file: {SelectedFile.OriginalFileName}, {ex}");
             }
+        }
+
+        private void CompareButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedFile == null) 
+                return;
+
+            var orgText = File.ReadAllText(SelectedFile.OriginalFileName);
+            var profileTxt = File.ReadAllText(SelectedFile.FileName);
+
+            var diff = Difference(orgText, profileTxt);
+            if (string.IsNullOrEmpty(diff))
+            {
+                MessageBox.Show("Files are identical");
+            }
+            else
+            {
+                MessageBox.Show(diff);
+            }
+        }
+
+        public string Difference(string str1, string str2)
+        {
+            if (str1 == null)
+            {
+                return str2;
+            }
+            if (str2 == null)
+            {
+                return str1;
+            }
+
+            List<string> set1 = str1.Split(' ').Distinct().ToList();
+            List<string> set2 = str2.Split(' ').Distinct().ToList();
+
+            var diff = set2.Count() > set1.Count() ? set2.Except(set1).ToList() : set1.Except(set2).ToList();
+
+            return string.Join("", diff);
         }
     }
 }
