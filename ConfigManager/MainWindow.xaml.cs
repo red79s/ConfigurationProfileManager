@@ -61,6 +61,7 @@ namespace ConfigManager
         private void AddProfileButton_Click(object sender, RoutedEventArgs e)
         {
             ProfileNameInputDialog dialog = new ProfileNameInputDialog();
+            dialog.Owner = this;
             if (dialog.ShowDialog() == true)
             {
                 var profileName = dialog.ProfileName;
@@ -191,6 +192,7 @@ namespace ConfigManager
             {
                 var txt = File.ReadAllText(SelectedFile.FileName);
                 var dialog = new TextFileEditDialog { Title = SelectedFile.Description };
+                dialog.Owner = this;
                 dialog.FileContent = txt;
                 if (dialog.ShowDialog() == false)
                     return;

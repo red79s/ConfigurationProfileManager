@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ConfigManager"
         mc:Ignorable="d"
-        Title="Editor" Height="350" Width="1200">
+        Title="Editor" Height="350" Width="1200" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
