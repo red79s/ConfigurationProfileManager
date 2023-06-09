@@ -55,7 +55,7 @@ namespace ConfigManager
 
         private void WriteOutput(string msg)
         {
-            OutputTextBox.Dispatcher.Invoke(new Action(() => { OutputTextBox.Text += msg; }));
+            OutputTextBox.Dispatcher.Invoke(new Action(() => { OutputTextBox.Text += msg + Environment.NewLine; }));
         }
 
         private void AddProfileButton_Click(object sender, RoutedEventArgs e)

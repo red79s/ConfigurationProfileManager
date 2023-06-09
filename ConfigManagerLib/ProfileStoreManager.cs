@@ -30,6 +30,7 @@ namespace ConfigManagerLib
                 var txt = File.ReadAllText(_configFile);
                 var profiles = System.Text.Json.JsonSerializer.Deserialize<ConfigurationInfo>(txt);
                 _config = profiles ?? CreateNewConfig();
+                _config.Profiles = _config.Profiles.OrderBy(x => x.Name).ToList();
             }
             else
             {
