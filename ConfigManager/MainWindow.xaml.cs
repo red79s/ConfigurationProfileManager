@@ -129,11 +129,11 @@ namespace ConfigManager
             try
             {
                 _profileStoreManager.UseProfile(SelectedProfile.Name);
-                WriteOutput($"Successfully applied profile: {SelectedProfile}");
+                WriteOutput($"Successfully applied profile: {SelectedProfile.Name}");
             }
             catch (Exception ex)
             {
-                WriteOutput($"Failed to use profile: {SelectedProfile}, {ex}");
+                WriteOutput($"Failed to use profile: {SelectedProfile.Name}, {ex}");
             }
         }
 
@@ -212,7 +212,7 @@ namespace ConfigManager
                 return;
             }
 
-            if (MessageBox.Show($"You are deleting profile: {SelectedProfile}, are you sure?", "Delete", MessageBoxButton.YesNo) == MessageBoxResult.No)
+            if (MessageBox.Show($"You are deleting profile: {SelectedProfile.Name}, are you sure?", "Delete", MessageBoxButton.YesNo) == MessageBoxResult.No)
             {
                 return;
             }
@@ -222,11 +222,11 @@ namespace ConfigManager
                 _profileStoreManager.DeleteProfile(SelectedProfile.Name);
                 ProfilesListView.Items.Remove(SelectedProfile);
                 SelectedProfile = null;
-                WriteOutput($"Profile: {SelectedProfile} deleted successfully");
+                WriteOutput($"Profile: {SelectedProfile.Name} deleted successfully");
             }
             catch (Exception ex)
             {
-                WriteOutput($"Failed to delete profile: {SelectedProfile}, {ex}");
+                WriteOutput($"Failed to delete profile: {SelectedProfile.Name}, {ex}");
             }
         }
 
