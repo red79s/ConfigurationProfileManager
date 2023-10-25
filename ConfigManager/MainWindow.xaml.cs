@@ -29,12 +29,13 @@ namespace ConfigManager
             }
             catch (Exception ex)
             {
-                WriteOutput($"Failed to load prfiles: {ex}");
+                WriteOutput($"Failed to load profiles: {ex}");
             }
         }
 
         private void LoadProfilesFromConfig()
         {
+            ProfilesListView.Items.Clear();
             foreach (var profile in _profileStoreManager.Configuration.Profiles)
             {
                 ProfilesListView.Items.Add(profile);
@@ -62,6 +63,7 @@ namespace ConfigManager
         {
             ProfileNameInputDialog dialog = new ProfileNameInputDialog();
             dialog.Owner = this;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (dialog.ShowDialog() == true)
             {
                 var profileName = dialog.ProfileName;
@@ -75,12 +77,47 @@ namespace ConfigManager
                 ProfilesListView.Items.Add(profile);
 
                 _profileStoreManager.Save();
+                LoadProfilesFromConfig();
+            }
+        }
+
+        private void EditProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedProfile == null)
+                return;
+
+            var profile = _profileStoreManager.GetProfile(SelectedProfile.Name);
+            if (profile == null)
+                return;
+
+            ProfileNameInputDialog dialog = new ProfileNameInputDialog() { ProfileName = profile.Name };
+            dialog.Owner = this;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (dialog.ShowDialog() == true)
+            {
+                var profileName = dialog.ProfileName;
+                if (_profileStoreManager.Configuration.Profiles.FirstOrDefault(p => p.Name.Equals(profileName, StringComparison.CurrentCultureIgnoreCase)) != null)
+                {
+                    MessageBox.Show($"Profile name: {profileName} is already defined, please choose a different name");
+                    return;
+                }
+
+                profile.Name = profileName;
+
+                _profileStoreManager.Save();
+                LoadProfilesFromConfig();
             }
         }
 
         private ProfileInfo? SelectedProfile { get; set; }
         private void ProfilesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (e.AddedItems.Count < 1)
+            {
+                SelectedProfile = null;
+                return;
+            }
+
             var profile = e.AddedItems[0] as ProfileInfo;
             SelectedProfile = profile;
 
@@ -293,5 +330,7 @@ namespace ConfigManager
 
             return string.Join("", diff);
         }
+
+        
     }
 }

@@ -7,7 +7,11 @@ namespace ConfigManager
     /// </summary>
     public partial class ProfileNameInputDialog : Window
     {
-        public string ProfileName => ProfileNameTextBox.Text;
+        public string ProfileName
+        {
+            get { return ProfileNameTextBox.Text; }
+            set { ProfileNameTextBox.Text = value; }
+        }
         public ProfileNameInputDialog()
         {
             InitializeComponent();
