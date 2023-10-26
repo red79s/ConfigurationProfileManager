@@ -50,7 +50,7 @@ namespace ConfigManagerLib
 
         public void Save()
         {
-            var txt = System.Text.Json.JsonSerializer.Serialize<ConfigurationInfo>(_config);
+            var txt = System.Text.Json.JsonSerializer.Serialize<ConfigurationInfo>(_config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_configFile, txt);
         }
 
@@ -118,6 +118,99 @@ namespace ConfigManagerLib
             _config.Profiles.Remove(profile);
 
             Save();
+        }
+
+        public void RenameProfile(string oldProfileName, string newProfileName)
+        {
+            if (oldProfileName == newProfileName)
+            {
+                return;
+            }
+
+            if (_config.Profiles.Any(p => p.Name == newProfileName))
+            {
+                throw new Exception($"Profile already exists: {newProfileName}");
+            }
+
+            var profile = GetProfile(oldProfileName);
+            if (profile == null)
+            {
+                throw new Exception($"Invalid profile: {oldProfileName}");
+            }
+
+            var newProfileDirectory = Path.Combine(_defaultProfileStorageDirectory, newProfileName);
+            Directory.Move(profile.ProfileDirectory, newProfileDirectory);
+            profile.Name = newProfileName;
+            profile.ProfileDirectory = newProfileDirectory;
+
+            foreach (var file in profile.Files)
+            {
+                var fi = new FileInfo(file.FileName);
+                file.FileName = Path.Combine(newProfileDirectory, fi.Name);
+            }
+
+            Save();
+        }
+
+        public ProfileInfo CloneProfile(string profileName, string newProfileName)
+        {
+            if (_config.Profiles.Any(p => p.Name == newProfileName))
+            {
+                throw new Exception($"Profile already exists: {newProfileName}");
+            }
+
+            var profile = GetProfile(profileName);
+            if (profile == null)
+            {
+                throw new Exception($"Invalid profile: {profileName}");
+            }
+
+            var newProfile = AddProfile(newProfileName);
+            foreach (var file in profile.Files)
+            {
+                var fi = new FileInfo(file.FileName);
+                var newFileName = Path.Combine(newProfile.ProfileDirectory, $"{Guid.NewGuid()} - {fi.Name}");
+                File.Copy(file.FileName, newFileName, true);
+                newProfile.Files.Add(new ConfigFileInfo
+                {
+                    Description = file.Description,
+                    OriginalFileName = file.OriginalFileName,
+                    FileName = newFileName,
+                    Created = DateTime.Now,
+                    Updated = DateTime.Now
+                });
+            }
+
+            Save();
+
+            return profile;
+        }
+
+        public ConfigFileInfo AddFileToProfile(string profileName, string fileName)
+        {
+            var profile = GetProfile(profileName);
+            if (profile == null)
+            {
+                throw new Exception($"Invalid profile: {profileName}");
+            }
+
+            var fi = new FileInfo(fileName);
+            var newFileName = Path.Combine(profile.ProfileDirectory, $"{Guid.NewGuid()} - {fi.Name}");
+            var fileInfo = new ConfigFileInfo
+            {
+                Description = fi.Name,
+                OriginalFileName = fileName,
+                FileName = newFileName,
+                Created = DateTime.Now,
+                Updated = DateTime.Now
+            };
+
+            File.Copy(fileName, newFileName, true);
+            profile.Files.Add(fileInfo);
+
+            Save();
+
+            return fileInfo;
         }
     }
 }

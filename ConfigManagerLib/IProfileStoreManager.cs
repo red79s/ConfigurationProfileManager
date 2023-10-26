@@ -12,5 +12,8 @@ namespace ConfigManagerLib
         public ProfileInfo GetProfile(string profileName);
         public void UseProfile(string profileName);
         public void DeleteProfile(string profileName);
+        public void RenameProfile(string oldProfileName, string newProfileName);
+        public ProfileInfo CloneProfile(string profileName, string newProfileName);
+        public ConfigFileInfo AddFileToProfile(string profileName, string fileName);
     }
 }

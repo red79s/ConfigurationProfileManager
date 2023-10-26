@@ -102,9 +102,34 @@ namespace ConfigManager
                     return;
                 }
 
-                profile.Name = profileName;
+                _profileStoreManager.RenameProfile(profile.Name, profileName);
 
-                _profileStoreManager.Save();
+                LoadProfilesFromConfig();
+            }
+        }
+
+        private void CloneProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedProfile == null)
+                return;
+
+            var profile = _profileStoreManager.GetProfile(SelectedProfile.Name);
+            if (profile == null)
+                return;
+
+            ProfileNameInputDialog dialog = new ProfileNameInputDialog() { ProfileName = profile.Name };
+            dialog.Owner = this;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (dialog.ShowDialog() == true)
+            {
+                var newProfileName = dialog.ProfileName;
+                if (_profileStoreManager.Configuration.Profiles.FirstOrDefault(p => p.Name.Equals(newProfileName, StringComparison.CurrentCultureIgnoreCase)) != null)
+                {
+                    MessageBox.Show($"Profile name: {newProfileName} is already defined, please choose a different name");
+                    return;
+                }
+                _profileStoreManager.CloneProfile(profile.Name, newProfileName);
+
                 LoadProfilesFromConfig();
             }
         }
@@ -198,21 +223,9 @@ namespace ConfigManager
 
             try
             {
-                var fi = new FileInfo(file);
-                var newFileName = System.IO.Path.Combine(profile.ProfileDirectory, fi.Name);
-                var fileInfo = new ConfigFileInfo
-                {
-                    Description = fi.Name,
-                    OriginalFileName = file,
-                    FileName = newFileName,
-                    Created = DateTime.Now,
-                    Updated = DateTime.Now
-                };
+                var fileInfo = _profileStoreManager.AddFileToProfile(profile.Name, file);
 
-                File.Copy(file, newFileName, true);
                 FilesListView.Items.Add(fileInfo);
-                profile.Files.Add(fileInfo);
-                _profileStoreManager.Save();
             }
             catch (Exception ex)
             {
@@ -242,6 +255,8 @@ namespace ConfigManager
             }
         }
 
+        
+
         private void DeleteProfileButton_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedProfile == null)
@@ -256,10 +271,13 @@ namespace ConfigManager
 
             try
             {
+                var profileName = SelectedProfile.Name;
+
                 _profileStoreManager.DeleteProfile(SelectedProfile.Name);
                 ProfilesListView.Items.Remove(SelectedProfile);
                 SelectedProfile = null;
-                WriteOutput($"Profile: {SelectedProfile.Name} deleted successfully");
+
+                WriteOutput($"Profile: {profileName} deleted successfully");
             }
             catch (Exception ex)
             {
