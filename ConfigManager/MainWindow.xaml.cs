@@ -49,7 +49,6 @@ namespace ConfigManager
 
         private void LoadProfilesFromConfig()
         {
-            ProfilesListView.Items.Clear();
             ProfilesListView.ItemsSource = _profileStoreManager.Configuration.Profiles;
             var view = (CollectionView)CollectionViewSource.GetDefaultView(ProfilesListView.ItemsSource);
             view.Filter = ProfileFilter;
@@ -87,8 +86,6 @@ namespace ConfigManager
                 }
 
                 var profile = _profileStoreManager.AddProfile(profileName);
-                ProfilesListView.Items.Add(profile);
-
                 _profileStoreManager.Save();
                 LoadProfilesFromConfig();
             }
@@ -287,8 +284,9 @@ namespace ConfigManager
                 var profileName = SelectedProfile.Name;
 
                 _profileStoreManager.DeleteProfile(SelectedProfile.Name);
-                ProfilesListView.Items.Remove(SelectedProfile);
                 SelectedProfile = null;
+
+                LoadProfilesFromConfig();
 
                 WriteOutput($"Profile: {profileName} deleted successfully");
             }
