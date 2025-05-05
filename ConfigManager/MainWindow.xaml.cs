@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace ConfigManager
 {
@@ -33,13 +34,25 @@ namespace ConfigManager
             }
         }
 
+        private void tbProfileFilter_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CollectionViewSource.GetDefaultView(ProfilesListView.ItemsSource).Refresh();
+        }
+
+        private bool ProfileFilter(object item)
+        {
+            if (String.IsNullOrEmpty(tbProfileFilter.Text))
+                return true;
+
+            return ((item as ProfileInfo).Name.IndexOf(tbProfileFilter.Text, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
         private void LoadProfilesFromConfig()
         {
             ProfilesListView.Items.Clear();
-            foreach (var profile in _profileStoreManager.Configuration.Profiles)
-            {
-                ProfilesListView.Items.Add(profile);
-            }
+            ProfilesListView.ItemsSource = _profileStoreManager.Configuration.Profiles;
+            var view = (CollectionView)CollectionViewSource.GetDefaultView(ProfilesListView.ItemsSource);
+            view.Filter = ProfileFilter;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
