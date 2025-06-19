@@ -68,7 +68,7 @@ namespace ConfigManager
 
         private void WriteOutput(string msg)
         {
-            OutputTextBox.Dispatcher.Invoke(new Action(() => { OutputTextBox.Text += msg + Environment.NewLine; }));
+            OutputTextBox.Dispatcher.Invoke(new Action(() => { OutputTextBox.Text = msg + Environment.NewLine + OutputTextBox.Text; }));
         }
 
         private void AddProfileButton_Click(object sender, RoutedEventArgs e)
@@ -201,7 +201,7 @@ namespace ConfigManager
             try
             {
                 _profileStoreManager.UseProfile(SelectedProfile.Name);
-                WriteOutput($"Successfully applied profile: {SelectedProfile.Name}");
+                WriteOutput($"Successfully applied profile: {SelectedProfile.Name} {DateTime.Now.ToString("f")}");
             }
             catch (Exception ex)
             {
@@ -360,6 +360,41 @@ namespace ConfigManager
             return string.Join("", diff);
         }
 
-        
+        private void DiffButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedProfile == null)
+            {
+                MessageBox.Show("Please select a profile to compare.");
+                return;
+            }
+
+            var differencesResult = "";
+            foreach (var file in SelectedProfile.Files)
+            {
+                try
+                {
+                    var originalContent = File.ReadAllText(file.OriginalFileName);
+                    var profileContent = File.ReadAllText(file.FileName);
+                    var diff = Difference(originalContent, profileContent);
+                    if (!string.IsNullOrEmpty(diff))
+                    {
+                        differencesResult += $"Differences found in file: {file.Description}\n{diff}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteOutput($"Failed to compare file: {file.Description}, {ex}");
+                }
+            }
+
+            if (differencesResult == "")
+            {
+                MessageBox.Show("No differences found in the selected profile files.");
+            }
+            else
+            {
+                MessageBox.Show(differencesResult, "Differences Found", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
     }
 }
